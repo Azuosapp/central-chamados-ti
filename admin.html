@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do TI - Grupo Azuos</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+</head>
+<body class="admin-body" style="visibility:hidden">
+
+<header class="top-header admin-header">
+  <div class="brand-side"><img src="logo-azuos.png" alt="Grupo Azuos" class="brand-logo"></div>
+  <div class="header-title">
+    <h1>Painel do TI</h1>
+    <p>Gerencie chamados, computadores e alertas de recorrência</p>
+  </div>
+  <div class="header-actions">
+    <button id="btnTheme" class="secondary theme-toggle" type="button" title="Alternar tema claro/escuro"></button>
+    <a class="btn secondary" href="index.html">Abrir chamado</a>
+    <button id="btnLogout" class="danger">Sair</button>
+  </div>
+</header>
+
+<main class="admin-shell">
+  <aside class="admin-sidebar">
+    <button id="btnToggleSidebar" class="sidebar-toggle" type="button" aria-label="Abrir ou fechar o menu">&#9776; Menu</button>
+    <button class="side-tab" data-tab="dashboard"><svg class="side-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg><span class="side-label">Dashboard</span></button>
+    <button class="side-tab" data-tab="inventario"><svg class="side-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg><span class="side-label">Inventário</span></button>
+    <button class="side-tab" data-tab="rede"><svg class="side-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg><span class="side-label">Rede</span> <b id="networkBadge" class="network-badge hidden">0</b></button>
+    <button class="side-tab" data-tab="deposito"><svg class="side-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg><span class="side-label">Depósito</span></button>
+    <button class="side-tab" data-tab="manutencao"><svg class="side-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg><span class="side-label">Manutenção</span></button>
+    <button class="side-tab" data-tab="inteligencia"><svg class="side-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg><span class="side-label">Inteligência</span></button>
+    <button class="side-tab" data-tab="orcamento"><svg class="side-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><span class="side-label">Orçamento</span></button>
+  </aside>
+
+  <div class="admin-content">
+  <section id="chamados-principal" class="card tickets-card">
+    <div class="admin-top">
+      <h2>Chamados</h2>
+      <button id="btnExport" class="secondary">Baixar relatório</button>
+    </div>
+    <div id="ticketMetrics" class="ticket-metrics"></div>
+    <div class="filters">
+      <input type="text" id="filterText" placeholder="Buscar por nome, chamado, departamento...">
+      <select id="filterStatus">
+        <option value="">Todos os status</option>
+        <option>Aberto</option>
+        <option>Em atendimento</option>
+        <option>Resolvido</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Chamado</th>
+            <th>Data</th>
+            <th>Nome</th>
+            <th>Departamento</th>
+            <th>Tipo</th>
+            <th>AnyDesk</th>
+            <th>Status</th>
+            <th>Descrição</th>
+            <th>Print</th>
+          </tr>
+        </thead>
+        <tbody id="ticketsBody"></tbody>
+      </table>
+    </div>
+    <div id="ticketsPager" class="pager"></div>
+  </section>
+
+  <section id="tab-dashboard" class="card dashboard-card tab-panel">
+    <div class="admin-top">
+      <div>
+        <h2>Dashboard de integridade</h2>
+        <p class="section-note">Visão baseada nos chamados registrados e no inventário de computadores.</p>
+      </div>
+      <button id="btnRefresh" class="secondary">Atualizar</button>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box dash-filter clickable" data-scope="mes" onclick="setDashScope('mes')" title="Mostrar todos os chamados do mês no mapa">
+        <span>Chamados no mês</span>
+        <strong id="statMonth">0</strong>
+      </div>
+      <div class="stat-box dash-filter clickable" data-scope="abertos" onclick="setDashScope('abertos')" title="Mostrar só os chamados abertos no mapa">
+        <span>Chamados abertos</span>
+        <strong id="statOpen">0</strong>
+      </div>
+      <div class="stat-box clickable" onclick="irParaAba('inventario')" title="Ir para o inventário das máquinas monitoradas">
+        <span>Computadores monitorados</span>
+        <strong id="statDevices">0</strong>
+      </div>
+      <div class="stat-box warning dash-filter clickable" data-scope="recorrencia" onclick="setDashScope('recorrencia')" title="Mostrar só os chamados recorrentes no mapa">
+        <span>Alertas de recorrência</span>
+        <strong id="statAlerts">0</strong>
+      </div>
+    </div>
+
+    <div class="dashboard-main-grid">
+      <section class="panel problem-panel">
+        <h3>Mapa dos maiores problemas</h3>
+        <div class="problem-chart-wrap">
+          <div id="problemDonut" class="problem-donut" aria-label="Gráfico de problemas por tipo"></div>
+          <div id="problemLegend" class="problem-legend"></div>
+        </div>
+      </section>
+      <section class="panel">
+        <h3>Alertas do mês (chamados e máquinas)</h3>
+        <div id="alertsList" class="alert-list"></div>
+      </section>
+    </div>
+
+    <section class="panel overload-panel">
+      <button type="button" id="overloadToggle" class="overload-header" aria-expanded="false">
+        <span class="overload-htext">Máquinas com picos de 100% <small>(CPU / RAM / Disco)</small></span>
+        <span id="overloadSummary" class="overload-summary"></span>
+        <span id="overloadChevron" class="overload-chevron">▸</span>
+      </button>
+      <div id="overloadBody" class="overload-body hidden">
+        <p class="section-note">Só informativo: mostra quais máquinas estão sendo mais exigidas — assim, se um usuário reclamar, você já sabe o motivo. Clique numa máquina para ver no inventário o que está consumindo.</p>
+        <div class="overload-tabs">
+          <button type="button" class="overload-tab active" data-period="hoje">Hoje</button>
+          <button type="button" class="overload-tab" data-period="mes">No mês</button>
+        </div>
+        <div id="overloadList" class="overload-list"></div>
+      </div>
+    </section>
+
+    <div class="dashboard-grid">
+      <section class="panel">
+        <h3>Problemas por tipo</h3>
+        <div id="typeChart" class="bar-list"></div>
+      </section>
+      <section class="panel">
+        <h3>Departamentos com mais chamados</h3>
+        <div id="deptChart" class="bar-list"></div>
+      </section>
+    </div>
+  </section>
+
+  <section id="tab-rede" class="card tab-panel">
+    <div class="admin-top">
+      <div>
+        <h2>Monitoramento da rede</h2>
+        <p class="section-note">Alertas enviados em tempo real pelo UniFi.</p>
+      </div>
+      <button id="btnNetworkRefresh" class="secondary">Atualizar rede</button>
+    </div>
+
+    <div class="network-summary">
+      <div class="stat-box network-status-box">
+        <span>Estado atual</span>
+        <strong id="networkStatus">Sem dados</strong>
+      </div>
+      <div class="stat-box">
+        <span>Alertas em 24 horas</span>
+        <strong id="network24h">0</strong>
+      </div>
+      <div class="stat-box danger-stat">
+        <span>Eventos críticos</span>
+        <strong id="networkCritical">0</strong>
+      </div>
+      <div class="stat-box">
+        <span>Último evento</span>
+        <strong id="networkLastEvent" class="network-last-event">-</strong>
+      </div>
+    </div>
+
+    <div id="networkHealthBanner" class="network-health-banner stable">
+      Aguardando eventos do UniFi.
+    </div>
+
+    <div class="table-wrap">
+      <table class="network-table">
+        <thead>
+          <tr>
+            <th>Horário</th>
+            <th>Gravidade</th>
+            <th>Evento</th>
+            <th>WAN / Provedor</th>
+            <th>Métricas</th>
+            <th>Mensagem</th>
+          </tr>
+        </thead>
+        <tbody id="networkAlertsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tab-inventario" class="card tab-panel">
+    <div class="admin-top">
+      <div>
+        <h2>Inventário automático de computadores</h2>
+        <p class="section-note">Dados enviados pelo coletor de hardware executado nas máquinas.</p>
+      </div>
+      <a class="btn secondary" href="instalar-inventario-azuos.bat" download>Baixar instalador automático</a>
+    </div>
+
+    <div class="inventory-toolbar">
+      <label>Departamento
+        <select id="hardwareDepartmentFilter">
+          <option value="">Todos os departamentos</option>
+        </select>
+      </label>
+      <input type="text" id="hardwareSearch" placeholder="Buscar por computador, modelo, processador...">
+      <div class="view-toggle">
+        <button type="button" id="btnTypeAll" class="active">Todos</button>
+        <button type="button" id="btnTypeDesktop">Computador</button>
+        <button type="button" id="btnTypeNotebook">Notebook</button>
+      </div>
+      <div class="view-toggle">
+        <button type="button" id="btnViewCards" class="active">Cards</button>
+        <button type="button" id="btnViewTable">Tabela</button>
+      </div>
+      <button id="btnExportHardwareReport" type="button">Baixar relatório do departamento</button>
+    </div>
+
+    <div class="hardware-summary">
+      <div class="stat-box health-filter" data-health="all" title="Ver todas as máquinas">
+        <span>Máquinas inventariadas</span>
+        <strong id="hwTotal">0</strong>
+      </div>
+      <div class="stat-box good-stat health-filter" data-health="Boa" title="Ver as máquinas com saúde boa">
+        <span>Saúde boa</span>
+        <strong id="hwGood">0</strong>
+      </div>
+      <div class="stat-box warning health-filter" data-health="Atencao" title="Ver as máquinas em atenção">
+        <span>Em atenção</span>
+        <strong id="hwWarning">0</strong>
+      </div>
+      <div class="stat-box danger-stat health-filter" data-health="Critica" title="Ver as máquinas críticas">
+        <span>Críticas</span>
+        <strong id="hwCritical">0</strong>
+      </div>
+    </div>
+
+    <div class="live-summary">
+      <div class="live-filter" data-live="online" title="Ver máquinas online"><span class="live-dot"></span><strong id="hwOnline">0</strong><small>online agora</small></div>
+      <div class="live-filter" data-live="offline" title="Ver máquinas offline"><strong id="hwOffline">0</strong><small>offline</small></div>
+      <div class="live-filter" data-live="alertas" title="Ver máquinas com alerta ativo"><strong id="hwActiveAlerts">0</strong><small>alertas ativos</small></div>
+      <div class="live-filter" data-live="cpu" title="Ver máquinas com CPU elevada"><strong id="hwCpuHigh">0</strong><small>CPU elevada</small></div>
+      <div class="live-filter" data-live="memoria" title="Ver máquinas com memória elevada"><strong id="hwMemoryHigh">0</strong><small>memória elevada</small></div>
+      <div class="live-filter" data-live="disco" title="Ver máquinas com disco elevado"><strong id="hwDiskHigh">0</strong><small>disco elevado</small></div>
+    </div>
+    <div id="performanceSetupNotice" class="setup-notice hidden">
+      O monitoramento em tempo real ainda precisa ser ativado no Supabase.
+    </div>
+    <div id="orcFilterNotice" class="orc-filter-notice hidden">
+      <span id="orcFilterNoticeText"></span>
+      <button type="button" id="btnClearOrcFilter" class="secondary small">✕ Limpar filtro</button>
+    </div>
+
+    <div id="hardwareCards" class="hardware-cards"></div>
+
+    <div class="table-wrap" id="hardwareTableWrap">
+      <table class="assets-table">
+        <thead>
+          <tr>
+            <th class="sortable" data-sort="nome">Computador <span class="arrow"></span></th>
+            <th class="sortable" data-sort="departamento">Departamento <span class="arrow"></span></th>
+            <th>Modelo</th>
+            <th class="sortable" data-sort="processador">Processador <span class="arrow"></span></th>
+            <th class="sortable" data-sort="memoria">Memória <span class="arrow"></span></th>
+            <th>Discos</th>
+            <th class="sortable" data-sort="chamados">Chamados no mês <span class="arrow"></span></th>
+            <th class="sortable" data-sort="integridade">Integridade <span class="arrow"></span></th>
+            <th class="sortable" data-sort="coleta">Última coleta <span class="arrow"></span></th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="assetsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tab-deposito" class="card tab-panel">
+    <div class="admin-top">
+      <div>
+        <h2>Depósito de hardware</h2>
+        <p class="section-note">Controle de estoque: entradas e saídas de peças e máquinas.</p>
+      </div>
+      <button id="btnAddDepositoItem" class="secondary">Adicionar item</button>
+    </div>
+    <div id="depositoMetrics" class="ticket-metrics"></div>
+
+    <section class="panel reserva-panel">
+      <h3>Máquinas em reserva — disponíveis <span id="reservaMaquinasCount" class="reserva-count">0</span></h3>
+      <p class="section-note">Puxadas automaticamente do inventário: toda máquina sem departamento entra aqui como reserva (parada, pronta para substituir outra). Não precisa cadastrar manualmente.</p>
+      <div class="table-wrap">
+        <table class="pro-table">
+          <thead><tr><th>Máquina</th><th>Processador</th><th>Memória</th><th>Disco</th><th>Situação</th><th>Ação</th></tr></thead>
+          <tbody id="reservaMaquinasBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="inventory-toolbar">
+      <label>Categoria
+        <select id="depositoCategoryFilter">
+          <option value="">Todas as categorias</option>
+        </select>
+      </label>
+      <label>Condição
+        <select id="depositoCondFilter">
+          <option value="">Todas</option>
+          <option value="Novo">Novo</option>
+          <option value="Usado">Usado</option>
+        </select>
+      </label>
+    </div>
+    <div class="table-wrap">
+      <table class="deposito-table pro-table">
+        <thead><tr><th>Categoria</th><th>Descrição</th><th>Condição</th><th>Em estoque</th><th>Ações</th></tr></thead>
+        <tbody id="depositoBody"></tbody>
+      </table>
+    </div>
+    <h3 class="deposito-mov-title">Últimas movimentações</h3>
+    <div class="table-wrap">
+      <table class="deposito-mov-table pro-table">
+        <thead><tr><th>Data</th><th>Item</th><th>Tipo</th><th>Qtd</th><th>Responsável</th><th>Observação</th><th>Ações</th></tr></thead>
+        <tbody id="depositoMovBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tab-manutencao" class="card tab-panel">
+    <div class="admin-top">
+      <div>
+        <h2>Manutenção dos computadores</h2>
+        <p class="section-note">Histórico do que foi feito em cada máquina. Ajuda a ver quais são mexidas com frequência e precisam ser trocadas.</p>
+      </div>
+      <button id="btnAddManutencao" class="secondary">Registrar manutenção</button>
+    </div>
+    <div id="manutencaoMetrics" class="ticket-metrics"></div>
+    <div id="manutencaoAlertas" class="manut-alertas"></div>
+    <h3 class="deposito-mov-title">Manutenções por computador</h3>
+    <div class="table-wrap">
+      <table class="deposito-table pro-table">
+        <thead><tr><th>Computador</th><th>No mês</th><th>Total</th></tr></thead>
+        <tbody id="manutencaoRankBody"></tbody>
+      </table>
+    </div>
+    <div class="inventory-toolbar">
+      <label>Computador
+        <select id="manutencaoFilter"><option value="">Todos os computadores</option></select>
+      </label>
+    </div>
+    <h3 class="deposito-mov-title">Histórico</h3>
+    <div class="table-wrap">
+      <table class="deposito-mov-table pro-table">
+        <thead><tr><th>Data</th><th>Computador</th><th>Tipo</th><th>O que foi feito</th><th>Responsável</th><th>Ações</th></tr></thead>
+        <tbody id="manutencaoBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="tab-inteligencia" class="card tab-panel">
+    <div class="admin-top">
+      <div>
+        <h2>Central de Inteligência</h2>
+        <p class="section-note">Auditoria automática das máquinas e dos chamados, com sugestões de melhoria — a partir dos seus próprios dados.</p>
+      </div>
+      <button id="btnRefreshInteligencia" class="secondary">Atualizar</button>
+    </div>
+    <div class="intel-cards-grid">
+      <button type="button" class="intel-nav-card" data-intel="desempenho">
+        <span class="intel-nav-icon">🖥️</span>
+        <span class="intel-nav-title">Inventário × Desempenho</span>
+        <span class="intel-nav-badge" id="intelDesempenhoCount"></span>
+      </button>
+      <button type="button" class="intel-nav-card" data-intel="upgrade">
+        <span class="intel-nav-icon">⬆️</span>
+        <span class="intel-nav-title">Sugestões de upgrade</span>
+        <span class="intel-nav-badge" id="intelUpgradeCount"></span>
+      </button>
+      <button type="button" class="intel-nav-card" data-intel="chamados">
+        <span class="intel-nav-icon">📋</span>
+        <span class="intel-nav-title">Inteligência dos chamados</span>
+        <span class="intel-nav-badge">análise</span>
+      </button>
+      <button type="button" class="intel-nav-card" data-intel="reserva">
+        <span class="intel-nav-icon">🔄</span>
+        <span class="intel-nav-title">Trocas com reserva</span>
+        <span class="intel-nav-badge" id="intelReservaCount"></span>
+      </button>
+    </div>
+    <div class="intel-detail-panel hidden">
+      <div class="intel-pane hidden" data-pane="desempenho">
+        <p class="section-note">Cruza o hardware com o uso real (RAM, disco, CPU e chamados) e diz o que fazer em cada máquina.</p>
+        <div id="intelDesempenho"></div>
+      </div>
+      <div class="intel-pane hidden" data-pane="upgrade">
+        <p class="section-note">Compara cada máquina com a de melhor desempenho que você tem e aponta o que falta pra chegar lá.</p>
+        <div class="view-toggle intel-filter">
+          <button type="button" class="active" data-upg="">Todos</button>
+          <button type="button" data-upg="troca">Trocar máquina</button>
+          <button type="button" data-upg="memoria">Trocar memória</button>
+          <button type="button" data-upg="ssd">Trocar SSD</button>
+        </div>
+        <div id="intelUpgrade"></div>
+      </div>
+      <div class="intel-pane hidden" data-pane="chamados">
+        <p class="section-note">Padrões nos chamados: o que mais dá problema, onde e com quem — com sugestões de ação preventiva.</p>
+        <div id="intelChamados"></div>
+      </div>
+      <div class="intel-pane hidden" data-pane="reserva">
+        <p class="section-note">Substitui máquinas urgentes (6ª/7ª geração) por reservas de 8ª geração ou mais novas. Reservas de 6ª/7ª geração ficam no depósito para venda.</p>
+        <div id="intelReserva"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-orcamento" class="card tab-panel">
+    <div class="admin-top">
+      <div>
+        <h2>Orçamento</h2>
+        <p class="section-note">Cruza as necessidades das máquinas com o depósito e diz o que comprar (e o que já tem em estoque). Com preços de referência e links de compra.</p>
+      </div>
+      <div class="detail-header-actions">
+        <div class="view-toggle">
+          <button type="button" id="btnOrcCards" class="active">Cards</button>
+          <button type="button" id="btnOrcTabela">Tabela</button>
+        </div>
+        <button id="btnPrintOrcamento" class="secondary">🖨 Imprimir</button>
+        <button id="btnRefreshOrcamento" class="secondary">Atualizar</button>
+      </div>
+    </div>
+    <div id="orcamentoCardsView">
+      <section class="panel">
+        <h3>O que comprar (necessidades × depósito)</h3>
+        <p class="section-note">Cruza o que as máquinas precisam com o estoque do depósito. Clique em um card para ver os itens.</p>
+        <div class="intel-cards-grid orc-cards-grid">
+          <button type="button" class="intel-nav-card" data-orc="comprar">
+            <span class="intel-nav-icon">🛒</span>
+            <span class="intel-nav-title">Precisa comprar</span>
+            <span class="intel-nav-badge" id="orcComprarCount"></span>
+          </button>
+          <button type="button" class="intel-nav-card" data-orc="estoque">
+            <span class="intel-nav-icon">✅</span>
+            <span class="intel-nav-title">Já em estoque — não precisa comprar</span>
+            <span class="intel-nav-badge" id="orcEstoqueCount"></span>
+          </button>
+        </div>
+        <div class="intel-detail-panel hidden" id="orcNecessidadesPanel">
+          <div class="orc-pane hidden" data-orcpane="comprar">
+            <p class="section-note">Máquinas que precisam de peça e o depósito NÃO cobre (faltam ou estoque vazio).</p>
+            <div id="orcamentoComprar"></div>
+          </div>
+          <div class="orc-pane hidden" data-orcpane="estoque">
+            <p class="section-note">Necessidades que o depósito já cobre — não precisa comprar agora.</p>
+            <div id="orcamentoEstoque"></div>
+          </div>
+        </div>
+      </section>
+      <section class="panel">
+        <h3>Onde comprar — referência de preços e links</h3>
+        <p class="section-note">Faixas aproximadas — referência jul/2026 (variam com o dia/promoção). Os links abrem a busca atual na loja, sempre com o preço de hoje.</p>
+        <div id="orcamentoLinks" class="orc-links"></div>
+      </section>
+    </div>
+    <div id="orcamentoTableView" class="hidden">
+      <div class="print-header">
+        <div>
+          <h2 class="print-title">Grupo Azuos — Orçamento de TI</h2>
+          <span id="orcPrintDate" class="section-note"></span>
+        </div>
+      </div>
+      <div id="orcamentoTabela"></div>
+    </div>
+  </section>
+
+  <div id="hardwareEditModal" class="modal-backdrop hidden">
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="hardwareEditTitle">
+      <div class="admin-top">
+        <h2 id="hardwareEditTitle">Editar identificação</h2>
+        <button type="button" id="btnCloseHardwareEdit" class="secondary small">Fechar</button>
+      </div>
+      <form id="hardwareEditForm">
+        <input type="hidden" id="hardwareEditId">
+        <label>Identificação do computador<input type="text" id="hardwareDisplayName" placeholder="Ex: Computador 01"></label>
+        <label>Responsável atual <span class="optional">(opcional)</span><input type="text" id="hardwareResponsible" placeholder="Pode deixar em branco"></label>
+        <label>Departamento
+          <select id="hardwareDepartment">
+            <option value="">Selecione o departamento</option>
+          </select>
+        </label>
+        <button type="submit">Salvar identificação</button>
+      </form>
+    </section>
+  </div>
+
+  <div id="hardwareDetailModal" class="device-detail-backdrop hidden">
+    <section class="device-detail" role="dialog" aria-modal="true" aria-labelledby="deviceDetailTitle">
+      <header class="device-detail-header">
+        <div>
+          <span id="deviceLiveStatus" class="device-live-status offline">Offline</span>
+          <h2 id="deviceDetailTitle">Computador</h2>
+          <p id="deviceDetailSubtitle" class="section-note"></p>
+        </div>
+        <div class="detail-header-actions">
+          <button type="button" id="btnTransferDept" class="secondary">Transferir departamento</button>
+          <button type="button" id="btnCloseHardwareDetail" class="secondary">Fechar</button>
+        </div>
+      </header>
+
+      <div class="live-metrics-grid">
+        <article class="live-metric cpu">
+          <div><span>CPU</span><strong id="detailCpu">0%</strong></div>
+          <div class="metric-bar"><i id="detailCpuBar"></i></div>
+          <small id="detailCpuCause">Aguardando dados</small>
+        </article>
+        <article class="live-metric memory">
+          <div><span>Memória</span><strong id="detailMemory">0%</strong></div>
+          <div class="metric-bar"><i id="detailMemoryBar"></i></div>
+          <small id="detailMemoryCause">Aguardando dados</small>
+        </article>
+        <article class="live-metric disk">
+          <div><span>Disco</span><strong id="detailDisk">0%</strong></div>
+          <div class="metric-bar"><i id="detailDiskBar"></i></div>
+          <small id="detailDiskCause">Aguardando dados</small>
+        </article>
+      </div>
+
+      <div class="detail-section">
+        <h3>Desempenho nas últimas 24 horas</h3>
+        <div class="performance-charts">
+          <div><span>CPU</span><svg id="cpuHistoryChart" viewBox="0 0 500 120" preserveAspectRatio="none"></svg></div>
+          <div><span>Memória</span><svg id="memoryHistoryChart" viewBox="0 0 500 120" preserveAspectRatio="none"></svg></div>
+          <div><span>Disco</span><svg id="diskHistoryChart" viewBox="0 0 500 120" preserveAspectRatio="none"></svg></div>
+        </div>
+      </div>
+
+      <div class="detail-two-columns">
+        <section class="detail-section">
+          <h3>Processos com maior consumo</h3>
+          <div id="detailTopProcesses" class="process-list"></div>
+        </section>
+        <section class="detail-section">
+          <h3>Atividade e possível causa</h3>
+          <div id="detailActivity" class="activity-box">Aguardando telemetria.</div>
+        </section>
+      </div>
+
+      <section class="detail-section">
+        <h3>Propriedades do computador</h3>
+        <div id="deviceProperties" class="device-properties"></div>
+      </section>
+
+      <section class="detail-section">
+        <h3>Histórico de alertas</h3>
+        <div class="table-wrap">
+          <table class="performance-alerts-table">
+            <thead><tr><th>Início</th><th>Recurso</th><th>Pico</th><th>Status</th><th>Possível causa</th><th>Atividade</th></tr></thead>
+            <tbody id="performanceAlertsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="detail-section">
+        <h3>Manutenções desta máquina</h3>
+        <div class="table-wrap">
+          <table class="performance-alerts-table">
+            <thead><tr><th>Data</th><th>Tipo</th><th>O que foi feito</th><th>Responsável</th></tr></thead>
+            <tbody id="deviceMaintBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="detail-section">
+        <h3>Peças do depósito nesta máquina</h3>
+        <div class="table-wrap">
+          <table class="performance-alerts-table">
+            <thead><tr><th>Data</th><th>Peça</th><th>Movimento</th><th>Qtd</th><th>Observação</th></tr></thead>
+            <tbody id="deviceDepositBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="detail-section">
+        <h3>Departamentos por onde passou (transferências)</h3>
+        <div class="table-wrap">
+          <table class="performance-alerts-table">
+            <thead><tr><th>Data</th><th>De → Para</th><th>Responsável</th><th>Observação</th></tr></thead>
+            <tbody id="deviceTransferBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </div>
+
+  <div id="transferModal" class="modal-backdrop hidden">
+    <section class="modal-card" role="dialog" aria-modal="true">
+      <div class="admin-top">
+        <h2>Transferir de departamento</h2>
+        <button type="button" id="btnCloseTransfer" class="secondary small">Fechar</button>
+      </div>
+      <form id="transferForm">
+        <input type="hidden" id="transferAssetId">
+        <p class="section-note" id="transferInfo"></p>
+        <label>Novo departamento<select id="transferPara"></select></label>
+        <label>Responsável <span class="optional">(opcional)</span><input type="text" id="transferResp" placeholder="Quem fez a transferência"></label>
+        <label>Observação <span class="optional">(opcional)</span><input type="text" id="transferObs" placeholder="Ex: emprestada para cobrir falta no Fiscal"></label>
+        <button type="submit">Confirmar transferência</button>
+      </form>
+    </section>
+  </div>
+
+  <div id="ticketDetailModal" class="modal-backdrop hidden">
+    <section class="modal-card ticket-detail-card" role="dialog" aria-modal="true" aria-labelledby="ticketDetailTitle">
+      <div class="admin-top">
+        <h2 id="ticketDetailTitle">Chamado</h2>
+        <button type="button" id="btnCloseTicketDetail" class="secondary small">Fechar</button>
+      </div>
+      <div id="ticketDetailBody" class="ticket-detail-body"></div>
+    </section>
+  </div>
+
+  <div id="depositoItemModal" class="modal-backdrop hidden">
+    <section class="modal-card" role="dialog" aria-modal="true">
+      <div class="admin-top">
+        <h2>Adicionar item ao depósito</h2>
+        <button type="button" id="btnCloseDepositoItem" class="secondary small">Fechar</button>
+      </div>
+      <form id="depositoItemForm">
+        <label>Descrição do item<input type="text" id="depositoItemNome" placeholder="Ex: SSD 240GB Kingston, Monitor LG 22, Fone com microfone" required></label>
+        <label>Categoria<select id="depositoItemCategoria"></select></label>
+        <label>Condição<select id="depositoItemCondicao"><option value="Novo">Novo</option><option value="Usado">Usado</option></select></label>
+        <label>Quantidade inicial<input type="number" id="depositoItemQtd" min="0" value="0"></label>
+        <button type="submit">Adicionar</button>
+      </form>
+    </section>
+  </div>
+
+  <div id="depositoEditModal" class="modal-backdrop hidden">
+    <section class="modal-card" role="dialog" aria-modal="true">
+      <div class="admin-top">
+        <h2>Editar item</h2>
+        <button type="button" id="btnCloseDepositoEdit" class="secondary small">Fechar</button>
+      </div>
+      <form id="depositoEditForm">
+        <input type="hidden" id="depositoEditId">
+        <label>Descrição do item<input type="text" id="depositoEditNome" placeholder="Ex: Memória Notebook 8GB DDR4 2666MHz" required></label>
+        <label>Categoria<select id="depositoEditCategoria"></select></label>
+        <label>Condição<select id="depositoEditCondicao"><option value="Novo">Novo</option><option value="Usado">Usado</option></select></label>
+        <button type="submit">Salvar alterações</button>
+      </form>
+    </section>
+  </div>
+
+  <div id="depositoMovModal" class="modal-backdrop hidden">
+    <section class="modal-card" role="dialog" aria-modal="true">
+      <div class="admin-top">
+        <h2 id="depositoMovTitle">Movimentação</h2>
+        <button type="button" id="btnCloseDepositoMov" class="secondary small">Fechar</button>
+      </div>
+      <form id="depositoMovForm">
+        <input type="hidden" id="depositoMovItemId">
+        <input type="hidden" id="depositoMovTipo">
+        <label>Quantidade<input type="number" id="depositoMovQtd" min="1" value="1" required></label>
+        <label>Computador <span class="optional">(para qual máquina, opcional)</span><select id="depositoMovComputador"></select></label>
+        <label>Responsável <span class="optional">(opcional)</span><input type="text" id="depositoMovResp" placeholder="Quem retirou ou repôs"></label>
+        <label>Observação <span class="optional">(opcional)</span><input type="text" id="depositoMovObs" placeholder="Ex: entregue para Fulano, sala 3"></label>
+        <button type="submit" id="depositoMovSubmit">Confirmar</button>
+      </form>
+    </section>
+  </div>
+
+  <div id="depositoMovEditModal" class="modal-backdrop hidden">
+    <section class="modal-card" role="dialog" aria-modal="true">
+      <div class="admin-top">
+        <h2>Editar movimentação</h2>
+        <button type="button" id="btnCloseDepositoMovEdit" class="secondary small">Fechar</button>
+      </div>
+      <form id="depositoMovEditForm">
+        <input type="hidden" id="depositoMovEditId">
+        <label>Computador <span class="optional">(para qual máquina)</span><select id="depositoMovEditComputador"></select></label>
+        <label>Responsável <span class="optional">(opcional)</span><input type="text" id="depositoMovEditResp" placeholder="Quem movimentou"></label>
+        <label>Observação<textarea id="depositoMovEditObs" placeholder="Ex: Colocado na máquina Computador 07"></textarea></label>
+        <button type="submit">Salvar</button>
+      </form>
+    </section>
+  </div>
+
+  <div id="manutencaoModal" class="modal-backdrop hidden">
+    <section class="modal-card" role="dialog" aria-modal="true">
+      <div class="admin-top">
+        <h2>Registrar manutenção</h2>
+        <button type="button" id="btnCloseManutencao" class="secondary small">Fechar</button>
+      </div>
+      <form id="manutencaoForm">
+        <label>Computador<select id="manutencaoComputador"></select></label>
+        <label id="manutencaoOutroWrap" class="hidden">Nome/identificação da máquina<input type="text" id="manutencaoComputadorOutro" placeholder="Ex: Notebook antigo da recepção"></label>
+        <label>Tipo<select id="manutencaoTipo"></select></label>
+        <label>O que foi feito<textarea id="manutencaoDescricao" placeholder="Ex: Troca de SSD; limpeza interna; troca de memória"></textarea></label>
+        <label>Responsável <span class="optional">(opcional)</span><input type="text" id="manutencaoResp" placeholder="Quem fez a manutenção"></label>
+        <label>Data<input type="date" id="manutencaoData"></label>
+        <button type="submit">Salvar manutenção</button>
+      </form>
+    </section>
+  </div>
+
+  </div>
+</main>
+
+<script src="admin.js"></script>
+</body>
+</html>
