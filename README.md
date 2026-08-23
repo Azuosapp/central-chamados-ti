@@ -74,12 +74,26 @@ TI (login)   →  admin.html  →  Supabase (leitura autenticada) + Realtime
 
 ## 3. Como publicar (deploy)
 
+> ⚠️ **Existem DOIS repositórios deste projeto no GitHub.**
+> Quem publica o site é o **`Queiroz-design/central-chamados-ti-azuos`** — é ele
+> que a Vercel lê. O `Azuosapp/central-chamados-ti` é a cópia do Grupo.
+> Arquivo enviado só para a cópia **não vai para o ar**.
+
 O site é publicado pela **Vercel**, conectada ao repositório do **GitHub**.
 
 1. Envie os arquivos alterados para o GitHub (botão **Add file → Upload files**,
    arrastando os arquivos; arquivos da pasta `api/` vão em `.../upload/main/api`).
 2. A Vercel detecta o commit e republica sozinha (~1 min).
 3. Ao testar, use **Ctrl+Shift+R** para ignorar o cache do navegador.
+
+> 🚨 **A pasta importa — é o erro mais fácil de cometer aqui.**
+> Se `chamado.js` ou `coletor.js` for arrastado para a **raiz** em vez de `api/`,
+> o GitHub aceita e a Vercel republica **sem apontar erro nenhum** — mas o site
+> segue rodando a versão antiga, porque quem executa é `api/chamado.js`. O arquivo
+> na raiz vira apenas um texto público em `https://.../chamado.js`.
+> Isso já aconteceu de verdade: a correção do aviso por WhatsApp e a do
+> `last_seen` ficaram sem efeito por semanas exatamente assim.
+> **Depois de subir, confira no GitHub que o caminho é `api/chamado.js`.**
 
 ---
 
