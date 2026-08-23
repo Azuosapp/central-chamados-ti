@@ -9,9 +9,14 @@ zero se necessário. **Este arquivo não contém senhas** — apenas onde encont
 
 | Parte | Onde está | O que é |
 |---|---|---|
-| Código | **GitHub** (`Queiroz-design/central-chamados-ti-azuos`) | páginas, funções `api/`, agentes, SQLs, README |
+| Código **que vai para o ar** | **GitHub** (`Queiroz-design/central-chamados-ti-azuos`) | é este que a Vercel lê e publica |
+| Código — cópia do Grupo | **GitHub** (`Azuosapp/central-chamados-ti`) | mesma base + os SQLs e este guia; **não publica nada sozinho** |
 | Site no ar | **Vercel** (projeto `central-chamados-ti-azuos`) | hospedagem + variáveis/segredos |
-| Dados e login | **Supabase** (projeto do Grupo Azuos) | banco (chamados, inventário, telemetria) + usuários |
+| Dados e login | **Supabase** (projeto `fazguvdmaufcohemsqom`) | banco (chamados, inventário, telemetria) + usuários |
+
+> ⚠️ Os dois repositórios são mantidos **à mão**, subindo os mesmos arquivos duas
+> vezes — e por isso já se desencontraram antes. Ao mexer no sistema, trate o
+> `Queiroz-design` como a fonte da verdade do que está no ar e replique na cópia.
 
 Perder o computador **não** perde o projeto — tudo isso está na nuvem. O que você
 realmente precisa proteger é o **acesso às 3 contas**.
